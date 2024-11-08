@@ -103,11 +103,237 @@ const QuestionBankManager = () => {
     }
   };
 
-  // UI components and rendering logic
-  // ...
+  return (
+    <div className="p-4 max-w-4xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Course Question Bank Manager</h1>
+        <div className="mt-4">
+          <label className="block text-sm font-medium">Select Course</label>
+          <select
+            className="mt-1 w-full rounded-md border p-2"
+            value={selectedCourse?.id}
+            onChange={e => setSelectedCourse(courses.find(c => c.id === parseInt(e.target.value)))}
+          >
+            <option value="">Select a course</option>
+            {courses.map(course => (
+              <option key={course.id} value={course.id}>{course.name}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {selectedCourse && (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className="space-y-4">
+            <Droppable droppableId="topics" type="TOPIC">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {topics.map((topic, index) => (
+                    <Draggable key={topic.id} draggableId={topic.id.toString()} index={index}>
+                      {(provided) => (
+                        <div ref={provided.innerRef} {...provided.draggableProps}>
+                          <Card className="relative">
+                            <CardHeader>
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center space-x-2" {...provided.dragHandleProps}>
+                                  <GripVertical className="h-5 w-5 text-gray-400" />
+                                  <CardTitle>{topic.name}</CardTitle>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateTopicOrder(topic.id, 'up')}
+                                    disabled={index === 0}
+                                  >
+                                    <ChevronUp className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => updateTopicOrder(topic.id, 'down')}
+                                    disabled={index === topics.length - 1}
+                                  >
+                                    <ChevronDown className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => {
+                                    setSelectedTopic(topic);
+                                    setIsTopicModalOpen(true);
+                                  }}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => deleteTopic(topic.id)}>
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm text-gray-600 mb-4">{topic.description}</p>
+                              
+                              <Droppable droppableId={topic.id.toString()} type="QUESTION">
+                                {(provided) => (
+                                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                                    {topic.questions.map((question, index) => (
+                                      <Draggable key={question.id} draggableId={question.id.toString()} index={index}>
+                                        {(provided) => (
+                                          <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            className="p-3 bg-gray-50 rounded-lg mb-2"
+                                          >
+                                            <p className="font-medium">{question.title}</p>
+                                            <div className="mt-2 space-y-1">
+                                              {question.answers.map(answer => (
+                                                <div key={answer.id} className="flex items-center space-x-2">
+                                                  <div className={`w-4 h-4 rounded-full ${answer.isCorrect ? 'bg-green-500' : 'bg-red-500'}`} />
+                                                  <p className="text-sm">{answer.answerText}</p>
+                                                </div>
+                                              ))}
+                                            </div>
+                                            <div className="flex justify-end mt-2 space-x-2">
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setQuestionToEdit(question);
+                                                  setIsQuestionModalOpen(true);
+                                                }}
+                                              >
+                                                <Edit className="h-4 w-4" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => deleteQuestion(topic.id, question.id)}
+                                              >
+                                                <Trash className="h-4 w-4" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </Draggable>
+                                    ))}
+                                    {provided.placeholder}
+                                  </div>
+                                )}
+                              </Droppable>
+
+                              <Dialog open={isQuestionModalOpen} onOpenChange={setIsQuestionModalOpen}>
+                                <DialogTrigger asChild>
+                                  <Button className="mt-4" variant="outline">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Question
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      {questionToEdit ? 'Edit Question' : 'Add New Question to '}{topic.name}
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <QuestionForm
+                                    topic={topic}
+                                    question={questionToEdit}
+                                    onSave={(newQuestion) => {
+                                      if (questionToEdit) {
+                                        updateQuestion(topic.id, questionToEdit.id, newQuestion);
+                                      } else {
+                                        addQuestion(topic.id, newQuestion);
+                                      }
+                                      setIsQuestionModalOpen(false);
+                                      setQuestionToEdit(null);
+                                    }}
+                                  />
+                                </DialogContent>
+                              </Dialog>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </div>
+        </DragDropContext>
+      )}
+
+      <Dialog open={isTopicModalOpen} onOpenChange={setIsTopicModalOpen}>
+        <DialogTrigger asChild>
+          <Button className="mt-4">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Topic
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedTopic ? 'Edit Topic' : 'Add New Topic'}</DialogTitle>
+          </DialogHeader>
+          <TopicForm
+            topic={selectedTopic}
+            onSave={(data) => {
+              if (selectedTopic) {
+                updateTopic(selectedTopic.id, data);
+              } else {
+                addTopic(data);
+              }
+              setIsTopicModalOpen(false);
+              setSelectedTopic(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
-// Other components like TopicForm, QuestionForm, etc.
-// ...
+const TopicForm = ({ topic, onSave }) => {
+  const [formData, setFormData] = useState(topic || { name: '', description: '' });
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium">Name</label>
+        <input
+          type="text"
+          className="mt-1 w-full rounded-md border p-2"
+          value={formData.name}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium">Description</label>
+        <textarea
+          className="mt-1 w-full rounded-md border p-2"
+          value={formData.description}
+          onChange={e => setFormData({ ...formData, description: e.target.value })}
+        />
+      </div>
+      <Button onClick={() => onSave(formData)}>Save Topic</Button>
+    </div>
+  );
+};
+
+const QuestionForm = ({ topic, question, onSave }) => {
+  const [formData, setFormData] = useState(question || {
+    title: '',
+    questionTypeId: 1,
+    answers: [{ answerText: '', isCorrect: false }]
+  });
+
+  const addAnswer = () => {
+    setFormData({
+      ...formData,
+      answers: [...formData.answers, { answerText: '', isCorrect: false }]
+    });
+  };
+
+  const saveQuestion = () => {
+    onSave(formData);
+  };
 
 export default QuestionBankManager;
