@@ -2,17 +2,17 @@ import { API_BASE_URL } from './config';
 
 const QuestionBankApi = {
   getCourses: () => {
-    return fetch(`${API_BASE_URL}/courses`)
+    return fetch(`${API_BASE_URL}/course`)
       .then(response => response.json());
   },
 
   getCourseTopics: (courseId) => {
-    return fetch(`${API_BASE_URL}/courses/${courseId}/topics`)
+    return fetch(`${API_BASE_URL}/course/coursetopic?courseid=${courseId}`)
       .then(response => response.json());
   },
 
   addTopic: (courseId, topic) => {
-    return fetch(`${API_BASE_URL}/courses/${courseId}/topics`, {
+    return fetch(`${API_BASE_URL}/course/coursetopic`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -23,7 +23,7 @@ const QuestionBankApi = {
   },
 
   updateTopic: (courseId, topicId, topic) => {
-    return fetch(`${API_BASE_URL}/courses/${courseId}/topics/${topicId}`, {
+    return fetch(`${API_BASE_URL}/course/coursetopic/${topicId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ const QuestionBankApi = {
   },
 
   deleteTopic: (courseId, topicId) => {
-    return fetch(`${API_BASE_URL}/courses/${courseId}/topics/${topicId}`, {
+    return fetch(`${API_BASE_URL}/course/coursetopic/${topicId}`, {
       method: 'DELETE'
     })
     .then(response => response.json());

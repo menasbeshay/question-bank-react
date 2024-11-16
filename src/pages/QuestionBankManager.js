@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, GripVertical, ChevronDown, ChevronUp, Edit, Trash } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import QuestionBankApi from './QuestionBankApi';
+import QuestionBankApi from '../utils/QuestionBankApi';
 
 const QuestionBankManager = () => {
   const [courses, setCourses] = useState([]);
@@ -334,6 +334,5 @@ const QuestionForm = ({ topic, question, onSave }) => {
 
   const saveQuestion = () => {
     onSave(formData);
-  };
-
+  };}
 export default QuestionBankManager;
